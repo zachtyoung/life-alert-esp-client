@@ -1,1 +1,1 @@
-# life-alert-esp-client
+This is the client side code code that will run on the ESP8266 and work in tandem with the the life alert front end and and backend repos to provide data recording from the ESP8266 and connected sound sensor
