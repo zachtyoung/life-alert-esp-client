@@ -92,10 +92,21 @@ void loop() {
         maxdB = sensorVal
       }
       //Sensor has been triggered so update the eventBuffer
-      
       previousTime = currentTime
       }else if(currentTime - previousTime > eventBuffer)){
         //reset and post values
+
+
+
+      if(WiFi.status()== WL_CONNECTED){
+      HTTPClient http;
+      http.begin(serverName);
+      http.addHeader("Content-Type", "application/json");      
+      int httpResponseCode = http.POST("{\"api_key\":\"tPmAT5Ab3j7F9\",\"sensor\":\"BME280\",\"value1\":\"24.25\",\"value2\":\"49.54\",\"value3\":\"1005.14\"}");
+      Serial.print("HTTP Response code: ");
+      Serial.println(httpResponseCode);
+      http.end();
+    }
       }
     
   }}
@@ -125,13 +136,3 @@ void loop() {
 //   String currentMonthName = months[currentMonth-1];
 //   int currentYear = ptm->tm_year+1900;
 //   String currentDate = String(currentYear) + "-" + String(currentMonth) + "-" + String(monthDay);
-
-//    if(WiFi.status()== WL_CONNECTED){
-//      HTTPClient http;
-//      http.begin(serverName);
-//      http.addHeader("Content-Type", "application/json");      
-//      int httpResponseCode = http.POST("{\"api_key\":\"tPmAT5Ab3j7F9\",\"sensor\":\"BME280\",\"value1\":\"24.25\",\"value2\":\"49.54\",\"value3\":\"1005.14\"}");
-//      Serial.print("HTTP Response code: ");
-//      Serial.println(httpResponseCode);
-//      http.end();
-//    }
