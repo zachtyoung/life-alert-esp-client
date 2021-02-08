@@ -30,9 +30,14 @@ const int eventThreshold = 300
 long delayBuffer = 30000
 
 long previousMillis = 0; 
-bool inStandbyMode = true
-bool inEventBufferMode = false
-bool inLegitEventMode = false
+//Store integer to represent the different modes 
+//0 = standby
+//1 = buffer
+//2 = recording
+int eventMode = 0
+//bool inStandbyMode = true
+//bool inEventBufferMode = false
+//bool inLegitEventMode = false
 
 void setup() {
   Serial.begin(115200);
