@@ -13,31 +13,31 @@ const char* ssid = "RobotZone";
 const char* password = "RobotZone1";
 const char* serverName = "http://192.168.1.106:1880/update-sensor";
 
-//unsigned long lastTime = 0;
-// Timer set to 10 minutes (600000)
-//unsigned long timerDelay = 600000;
-// Set timer to 5 seconds (5000)
-//unsigned long timerDelay = 5000;
-
 //Init button to be used for ON/OFF override swtich
 const int on_off_switch = 4;
 //Init pin to read the sensor value from
 const int soundSensor = A0;
 //Set the threshold value that triggers an event
-const int eventThreshold = 300
+const int eventThreshold = 300;
 
 //Initial delay period to weed out non-events
-long delayBuffer = 30000
-
-long previousMillis = 0; 
+long delayBuffer = 30000;
+long eventBuffer = 60000;
+long previousTime = 0;
+long previousEventTime = 0;
 //Store integer to represent the different modes 
-//0 = standby
+//0 = sentry
 //1 = buffer
 //2 = recording
-int eventMode = 0
-//bool inStandbyMode = true
-//bool inEventBufferMode = false
-//bool inLegitEventMode = false
+int eventMode = 0;
+String potentialStartTime;
+String potentialEndTime;
+  //Times triggered is an int to store the amount of times the threshold value for an event is triggered during an event. AKA how many times did it get very loud
+  //Starts at 2 becuase by the time we get to eventMode 2 then the sensor has been triggered 2 times
+  int timesTriggered = 2;
+  
+  //MaxdB is an int to store the peak dB value recorded during an event 
+  int maxdB = 0;
 
 void setup() {
   Serial.begin(115200);
@@ -50,16 +50,70 @@ void setup() {
   timeClient.begin();
   timeClient.setTimeOffset(-21600);
   
-  //Times triggered is an int to store the amount of times the threshold value for an event is triggered during an event. AKA how many times did it get very loud
-  int timesTriggered
-  
-  //MaxdB is an int to store the peak dB value recorded during an event 
-  int maxdB
+
+
+ 
 }
 
 void loop() {
+  unsigned long currentTime = millis();
    timeClient.update();
-//   unsigned long epochTime = timeClient.getEpochTime();
+  if(eventMode == 0){ //Sentry Mode
+    if(analogRead(soundSensor) > eventThreshold){
+      //If sensor is tripped the first time, set the event mode to buffer status
+     eventMode = 1;
+     previousTime = currentTime;
+    }
+  }
+  if(eventMode == 1){ //Buffer Mode
+    potentialStartTime = timeClient.getFormattedTime(); //May need to record more variations of date/time for POST request to server
+       
+       //If sensor is triggered and the time from start is less than 30 seconds
+       if((analogRead(soundSensor) > eventThreshold)&& currentTime-previousTime <= delayBuffer){
+        previousTime = currentTime;
+        eventMode = 2;
+        Serial.println("Going to eventMode 2");
+       //Else if the timer expires before another trigger of the sensor then switch back to sentry mode
+       }else if(!currentTime-previousTime >= delayBuffer){
+        eventMode = 0;
+        Serial.println("Going back to eventMode 0");
+       }
+    
+  }
+  if(eventMode == 2){//Recording Mode
+    int sensorVal = analogRead(soundSensor) 
+    if(sensorVal> eventThreshold)&& currentTime - previousTime <= eventBuffer){
+      //Store the potential end time of the event
+      potentialEndTime = timeClient.getFormattedTime();
+      //Since sensor has been triggered, increase the triggered count
+        timesTriggered++
+      // If the current reading of the sensor is greater than the current maxdB, update the maxdB to the current sensorVal
+      if(sensorVal > maxdB){
+        maxdB = sensorVal
+      }
+      //Sensor has been triggered so update the eventBuffer
+      
+      previousTime = currentTime
+      }else if(currentTime - previousTime > eventBuffer)){
+        //reset and post values
+      }
+    
+  }}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  //   unsigned long epochTime = timeClient.getEpochTime();
 //   String formattedTime = timeClient.getFormattedTime();
 //   int currentHour = timeClient.getHours();
 //   int currentMinute = timeClient.getMinutes();
@@ -72,30 +126,6 @@ void loop() {
 //   int currentYear = ptm->tm_year+1900;
 //   String currentDate = String(currentYear) + "-" + String(currentMonth) + "-" + String(monthDay);
 
-   if(inEventMode){
-    
-    }
-    else{
-       
-    if(analogRead(soundSensor) > eventThreshold){   
-          inEventMode
-          
-    }}
-   
-  
-    
-
-
-
-
-
-
-
-
-
-
-  
-
 //    if(WiFi.status()== WL_CONNECTED){
 //      HTTPClient http;
 //      http.begin(serverName);
@@ -105,4 +135,3 @@ void loop() {
 //      Serial.println(httpResponseCode);
 //      http.end();
 //    }
-  }
