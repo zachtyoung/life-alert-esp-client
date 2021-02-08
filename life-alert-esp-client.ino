@@ -21,83 +21,88 @@ const char* serverName = "http://192.168.1.106:1880/update-sensor";
 
 //Init button to be used for ON/OFF override swtich
 const int on_off_switch = 4;
+//Init pin to read the sensor value from
+const int soundSensor = A0;
+//Set the threshold value that triggers an event
+const int eventThreshold = 300
+
+//Initial delay period to weed out non-events
+long delayBuffer = 30000
+
+long previousMillis = 0; 
+//Store integer to represent the different modes 
+//0 = standby
+//1 = buffer
+//2 = recording
+int eventMode = 0
+//bool inStandbyMode = true
+//bool inEventBufferMode = false
+//bool inLegitEventMode = false
 
 void setup() {
   Serial.begin(115200);
   WiFi.begin(ssid, password);
   Serial.println("Connecting");
-  while(WiFi.status() != WL_CONNECTED) {
-    delay(500);
-    Serial.print(".");
-  }
+  while(WiFi.status() != WL_CONNECTED) {delay(500);Serial.print(".");}
   Serial.println("");
   Serial.print("Connected to WiFi network with IP Address: ");
   Serial.println(WiFi.localIP());
   timeClient.begin();
   timeClient.setTimeOffset(-21600);
+  
+  //Times triggered is an int to store the amount of times the threshold value for an event is triggered during an event. AKA how many times did it get very loud
+  int timesTriggered
+  
+  //MaxdB is an int to store the peak dB value recorded during an event 
+  int maxdB
 }
 
 void loop() {
    timeClient.update();
-   //Time related variables here
-   unsigned long epochTime = timeClient.getEpochTime();
-   String formattedTime = timeClient.getFormattedTime();
-   int currentHour = timeClient.getHours();
-   int currentMinute = timeClient.getMinutes();
-   int currentSecond = timeClient.getSeconds();
-   String weekDay = weekDays[timeClient.getDay()];
-   struct tm *ptm = gmtime ((time_t *)&epochTime);
-   int monthDay = ptm->tm_mday;
-   int currentMonth = ptm->tm_mon+1;
-   String currentMonthName = months[currentMonth-1];
-   int currentYear = ptm->tm_year+1900;
-   String currentDate = String(currentYear) + "-" + String(currentMonth) + "-" + String(monthDay);
-  //Not sure which state is default -> could be LOW or HIGH
-  //If switch is ON then continue logic to record 'events'
-  if(digitalRead(on_off_switch) == HIGH){
+//   unsigned long epochTime = timeClient.getEpochTime();
+//   String formattedTime = timeClient.getFormattedTime();
+//   int currentHour = timeClient.getHours();
+//   int currentMinute = timeClient.getMinutes();
+//   int currentSecond = timeClient.getSeconds();
+//   String weekDay = weekDays[timeClient.getDay()];
+//   struct tm *ptm = gmtime ((time_t *)&epochTime);
+//   int monthDay = ptm->tm_mday;
+//   int currentMonth = ptm->tm_mon+1;
+//   String currentMonthName = months[currentMonth-1];
+//   int currentYear = ptm->tm_year+1900;
+//   String currentDate = String(currentYear) + "-" + String(currentMonth) + "-" + String(monthDay);
 
-    //Logic for event goes here
-
+   if(inEventMode){
     
-  }
-
-
-
-
-
-
-
-
-
-  
-
-    if(WiFi.status()== WL_CONNECTED){
-      HTTPClient http;
-      http.begin(serverName);
-      http.addHeader("Content-Type", "application/json");      
-      int httpResponseCode = http.POST("{\"api_key\":\"tPmAT5Ab3j7F9\",\"sensor\":\"BME280\",\"value1\":\"24.25\",\"value2\":\"49.54\",\"value3\":\"1005.14\"}");
-      Serial.print("HTTP Response code: ");
-      Serial.println(httpResponseCode);
-      http.end();
     }
-  }
+    else{
+       
+    if(analogRead(soundSensor) > eventThreshold){   
+          inEventMode
+          
+    }}
+   
+  
+    
 
 
 
-  /* 
-   Metrics to Track/Display 
-   DAILY
-   - Total events for the day
-   WEEKLY
-   - Total events for the week
-   - Day with most events
 
-   MONTHLY
-   -Total events for the month
-   -Day with the most events
-   -Week with the most events
+
+
+
 
 
 
   
-  */
+
+//    if(WiFi.status()== WL_CONNECTED){
+//      HTTPClient http;
+//      http.begin(serverName);
+//      http.addHeader("Content-Type", "application/json");      
+//      int httpResponseCode = http.POST("{\"api_key\":\"tPmAT5Ab3j7F9\",\"sensor\":\"BME280\",\"value1\":\"24.25\",\"value2\":\"49.54\",\"value3\":\"1005.14\"}");
+//      Serial.print("HTTP Response code: ");
+//      Serial.println(httpResponseCode);
+//      http.end();
+//    }
+  }
