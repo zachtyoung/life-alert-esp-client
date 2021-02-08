@@ -92,6 +92,7 @@ void loop() {
         maxdB = sensorVal
       }
       //Sensor has been triggered so update the eventBuffer
+      
       previousTime = currentTime
       }else if(currentTime - previousTime > eventBuffer)){
         //reset and post values
