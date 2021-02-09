@@ -30,8 +30,8 @@ long previousEventTime = 0;
 //1 = buffer
 //2 = recording
 int eventMode = 0;
-String potentialStartTime;
-String potentialEndTime;
+unsigned long potentialStartTime;
+unsigned long potentialEndTime;
   //Times triggered is an int to store the amount of times the threshold value for an event is triggered during an event. AKA how many times did it get very loud
   //Starts at 2 becuase by the time we get to eventMode 2 then the sensor has been triggered 2 times
   int timesTriggered = 2;
@@ -70,7 +70,7 @@ void loop() {
   }
   if(eventMode == 1){ //Buffer Mode
     delay(500);
-    potentialStartTime = timeClient.getFormattedTime(); //May need to record more variations of date/time for POST request to server
+    potentialStartTime = timeClient.getEpochTime(); //May need to record more variations of date/time for POST request to server
        Serial.println("starting buffer period of 30 seconds");
        //If sensor is triggered and the time from start is less than 30 seconds
        if((analogRead(soundSensor) > eventThreshold)&& currentTime-previousTime <= delayBuffer){
@@ -91,7 +91,7 @@ void loop() {
     if(sensorVal> eventThreshold && currentTime - previousTime <= eventBuffer){
       Serial.println("triggered in timer period,");
       //Store the potential end time of the event
-      potentialEndTime = timeClient.getFormattedTime();
+      potentialEndTime = timeClient.getEpochTime();
       //Since sensor has been triggered, increase the triggered count
         timesTriggered++;
       // If the current reading of the sensor is greater than the current maxdB, update the maxdB to the current sensorVal
@@ -115,7 +115,8 @@ void loop() {
 //      if(WiFi.status()== WL_CONNECTED){
 //      HTTPClient http;
 //      http.begin(serverName);
-//      http.addHeader("Content-Type", "application/json");      
+//      http.addHeader("Content-Type", "application/json");  
+//       http.setAuthorization("guest", "guest"); maybe?????????    
 //      int httpResponseCode = http.POST("{\"api_key\":\"tPmAT5Ab3j7F9\",\"sensor\":\"BME280\",\"value1\":\"24.25\",\"value2\":\"49.54\",\"value3\":\"1005.14\"}");
 //      Serial.print("HTTP Response code: ");
 //      Serial.println(httpResponseCode);
