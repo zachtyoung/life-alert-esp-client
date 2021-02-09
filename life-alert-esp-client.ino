@@ -9,8 +9,8 @@ NTPClient timeClient(ntpUDP, "pool.ntp.org");
 String weekDays[7]={"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"};
 String months[12]={"January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"};
 
-const char* ssid = "RobotZone";
-const char* password = "RobotZone1";
+const char* ssid = "Zach's Wi-Fi Network";
+const char* password = "Jayhawk20";
 const char* serverName = "http://192.168.1.106:1880/update-sensor";
 
 //Init button to be used for ON/OFF override swtich
@@ -59,54 +59,68 @@ void loop() {
   unsigned long currentTime = millis();
    timeClient.update();
   if(eventMode == 0){ //Sentry Mode
+    delay(500);
     if(analogRead(soundSensor) > eventThreshold){
+      Serial.println("Sensor triggered, going to event mode 1");
       //If sensor is tripped the first time, set the event mode to buffer status
      eventMode = 1;
      previousTime = currentTime;
     }
+    Serial.println("Sensor not triggered");
   }
   if(eventMode == 1){ //Buffer Mode
+    delay(500);
     potentialStartTime = timeClient.getFormattedTime(); //May need to record more variations of date/time for POST request to server
-       
+       Serial.println("starting buffer period of 30 seconds");
        //If sensor is triggered and the time from start is less than 30 seconds
        if((analogRead(soundSensor) > eventThreshold)&& currentTime-previousTime <= delayBuffer){
         previousTime = currentTime;
         eventMode = 2;
         Serial.println("Going to eventMode 2");
        //Else if the timer expires before another trigger of the sensor then switch back to sentry mode
-       }else if(!currentTime-previousTime >= delayBuffer){
+       }else if(currentTime-previousTime >= delayBuffer){
         eventMode = 0;
         Serial.println("Going back to eventMode 0");
        }
     
   }
   if(eventMode == 2){//Recording Mode
-    int sensorVal = analogRead(soundSensor) 
-    if(sensorVal> eventThreshold)&& currentTime - previousTime <= eventBuffer){
+    delay(500);
+    Serial.println("Now in event mode 2");
+    int sensorVal = analogRead(soundSensor);
+    if(sensorVal> eventThreshold && currentTime - previousTime <= eventBuffer){
+      Serial.println("triggered in timer period,");
       //Store the potential end time of the event
       potentialEndTime = timeClient.getFormattedTime();
       //Since sensor has been triggered, increase the triggered count
-        timesTriggered++
+        timesTriggered++;
       // If the current reading of the sensor is greater than the current maxdB, update the maxdB to the current sensorVal
       if(sensorVal > maxdB){
-        maxdB = sensorVal
+        maxdB = sensorVal;
       }
       //Sensor has been triggered so update the eventBuffer
-      previousTime = currentTime
-      }else if(currentTime - previousTime > eventBuffer)){
+      Serial.println("Restarting eventMode 2 loop and updating timer");
+      previousTime = currentTime;
+      }else if(currentTime - previousTime > eventBuffer){
         //reset and post values
-
-
-
-      if(WiFi.status()== WL_CONNECTED){
-      HTTPClient http;
-      http.begin(serverName);
-      http.addHeader("Content-Type", "application/json");      
-      int httpResponseCode = http.POST("{\"api_key\":\"tPmAT5Ab3j7F9\",\"sensor\":\"BME280\",\"value1\":\"24.25\",\"value2\":\"49.54\",\"value3\":\"1005.14\"}");
-      Serial.print("HTTP Response code: ");
-      Serial.println(httpResponseCode);
-      http.end();
-    }
+        Serial.println("Timer ran out");
+        eventMode = 0;
+        timesTriggered = 2;
+        Serial.println("Going back to eventMode 0");
+        Serial.println(potentialStartTime);
+        Serial.println("---------");
+        Serial.println(potentialEndTime);
+        Serial.println("----------");
+        Serial.println(timesTriggered);
+//      if(WiFi.status()== WL_CONNECTED){
+//      HTTPClient http;
+//      http.begin(serverName);
+//      http.addHeader("Content-Type", "application/json");      
+//      int httpResponseCode = http.POST("{\"api_key\":\"tPmAT5Ab3j7F9\",\"sensor\":\"BME280\",\"value1\":\"24.25\",\"value2\":\"49.54\",\"value3\":\"1005.14\"}");
+//      Serial.print("HTTP Response code: ");
+//      Serial.println(httpResponseCode);
+//      http.end();
+//    }
       }
     
   }}
